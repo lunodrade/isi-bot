@@ -1,3 +1,29 @@
 {
-    "token": "DISCORD-BOT-TOKEN-HERE"
+    "token": "DISCORD-BOT-TOKEN-HERE",
+
+    "emoji": {
+        "added": "<:added:596342162581618700>",
+        "modified": "<:edited:596345065295708180>",
+        "removed": "<:removed:596342162438881291>"
+    },
+
+    "channelID": {
+        "Soluções Usiminas": "193421996883836928",
+        "lunodrade": "193421996883836928"
+    },
+
+    "color": {
+        "create": "#7CB342",
+        "delete": "#e53935",
+
+        "note": "#3949AB",
+        
+        "open": "#e53935",
+        "close": "#7CB342",
+        "reopen": "#e53935",
+        "update": "#00ACC1",
+        
+        "push": "#FB8C00"
+    }
 }
+
