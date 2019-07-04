@@ -1,24 +1,8 @@
+const Config = require("../config.json");
+const Color = Config['color'];
+const Emoji = Config['emoji'];
+
 module.exports = {
-    /*
-    testaa: function(embedClass, json) {
-        var embed = new embedClass();
-
-        embed.setColor("#00AE86");
-        embed.setTitle('NOVIDADE!');
-        embed.setAuthor("Autor Fulano", "https://i.imgur.com/lm8s41J.png");
-        embed.setDescription('Some description that relates to the title.');
-        embed.setFooter("This is the footer text, it can hold 2048 characters").setTimestamp();
-        embed.setImage("http://i.imgur.com/yVpymuV.png")
-        embed.setThumbnail("http://i.imgur.com/p2qNFag.png")
-        
-        embed.addField('Title of the field', 'Value of the field', true);
-        embed.addField('Title of the field2', 'Value of the field2', true);
-        embed.addBlankField(true).addBlankField(true);
-        embed.addField('Second field', 'Second field value');
-
-        return embed;
-    },
-    */
 
     /////////////////////////////////////////////////// OPEN //////////////////////////////////////////////////////
     openEmbed: function (embedClass, json) {
@@ -27,8 +11,9 @@ module.exports = {
         var user = json['user'];
         var attr = json['object_attributes'];
         var proj = json['project'];
+        var labels = json['labels'];
 
-        embed.setColor("#00AE86");
+        embed.setColor(Color['open']);
         //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
         embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
 
@@ -39,6 +24,18 @@ module.exports = {
         var assignee = json['assignees'] ? json['assignees'][0]['name'] : "ninguém";
         embed.addField('Responsável', assignee, true);
         embed.addField('due date', attr['due_date'], true);
+
+        var labelsStr = "";
+        labels.forEach(label => {
+            labelsStr += "\`" + label['title'] + "\`, ";
+        });
+        if(labels.length > 0)
+            labelsStr = labelsStr.slice(0, labelsStr.length-2);
+        else
+            labelsStr = "--";
+
+        embed.addField('Labels', labelsStr, true);
+
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")");
 
         return embed;
@@ -51,8 +48,9 @@ module.exports = {
         var user = json['user'];
         var attr = json['object_attributes'];
         var proj = json['project'];
+        var labels = json['labels'];
 
-        embed.setColor("#00AE86");
+        embed.setColor(Color['close']);
         //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
         embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
 
@@ -60,7 +58,17 @@ module.exports = {
         embed.setURL(attr['url']);
         embed.setDescription(attr['description']);
 
-        embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")");
+        embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")", true);
+
+        var labelsStr = "";
+        labels.forEach(label => {
+            labelsStr += "\`" + label['title'] + "\` ";
+        });
+        if(labels.length > 0)
+            labelsStr = labelsStr.slice(0, labelsStr.length-2);
+        else
+            labelsStr = "--";
+        embed.addField('Labels', labelsStr, true);
 
         return embed;
     },
@@ -72,8 +80,9 @@ module.exports = {
         var user = json['user'];
         var attr = json['object_attributes'];
         var proj = json['project'];
+        var labels = json['labels'];
 
-        embed.setColor("#00AE86");
+        embed.setColor(Color['reopen']);
         //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
         embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
 
@@ -84,6 +93,17 @@ module.exports = {
         var assignee = json['assignees'] ? json['assignees'][0]['name'] : "ninguém";
         embed.addField('Responsável', assignee, true);
         embed.addField('due date', attr['due_date'], true);
+
+        var labelsStr = "";
+        labels.forEach(label => {
+            labelsStr += "\`" + label['title'] + "\` ";
+        });
+        if(labels.length > 0)
+            labelsStr = labelsStr.slice(0, labelsStr.length-2);
+        else
+            labelsStr = "--";
+        embed.addField('Labels', labelsStr, true);
+
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")");
 
         return embed;
@@ -96,8 +116,9 @@ module.exports = {
         var user = json['user'];
         var attr = json['object_attributes'];
         var proj = json['project'];
+        var labels = json['labels'];
 
-        embed.setColor("#00AE86");
+        embed.setColor(Color['update']);
         //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
         embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
 
@@ -108,7 +129,20 @@ module.exports = {
         var assignee = json['assignees'] ? json['assignees'][0]['name'] : "ninguém";
         embed.addField('Responsável', assignee, true);
         embed.addField('due date', attr['due_date'], true);
+
+        var labelsStr = "";
+        labels.forEach(label => {
+            labelsStr += "\`" + label['title'] + "\` ";
+        });
+        if(labels.length > 0)
+            labelsStr = labelsStr.slice(0, labelsStr.length-2);
+        else
+            labelsStr = "--";
+        embed.addField('Labels', labelsStr, true);
+
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")");
+
+        embed.addField('TODO', 'adicionar changes', true);
 
         return embed;
     }

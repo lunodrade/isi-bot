@@ -19,13 +19,12 @@ Glob("gitlab/*.js", function (er, files) {
     });
 });
 
-
 app.use(BodyParser.json());
 
 ////////////////////////////////////////////////// DiscordJS /////////////////////////////////////////////
 
 client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+    console.log(`Bot inicializado como ${client.user.tag}!`);
 });
 
 client.on('message', msg => {
@@ -42,19 +41,23 @@ client.on('message', msg => {
 client.login(Config.token);
 
 ////////////////////////////////////////////////// ExpressJS /////////////////////////////////////////////
+
 /**
  * Gerenciamento de requisições POST (webhook)
  */
 app.post('/gitlab', function (req, res) {
     var json = req.body;
 
-    var fnEvent = json['event_type'];
+    var fnEvent = json['object_kind'];
     var fnAction;
+    var projectNamespace = json['project']['namespace'];
 
-    if(fnEvent == 'issue') {
+    if(fnEvent == 'issue' || fnEvent == 'wiki_page') {
         fnAction = json['object_attributes']['action'];
     } else if (fnEvent == 'note') {
         fnAction = json['object_attributes']['noteable_type'].toLowerCase();
+    } else if (fnEvent == 'push' || fnEvent == 'tag_push') {
+        fnAction = 'send';
     } else {
         console.log('Sem tratamento para: ' + fnEvent);
     }
@@ -62,14 +65,16 @@ app.post('/gitlab', function (req, res) {
     //tenta pegar os dados, e caso tenha campos com erros no json, só reportar o erro e seguir em frente
     try {
         var embed = GitlabEvents[fnEvent][fnAction+"Embed"](Discord.RichEmbed, json);
-        //todo: separar os canais baseado em namespace?
-        client.channels.get('193421996883836928').send( { embed: embed } );
+        var channelID = Config['channelID'][projectNamespace];
+
+        if(typeof channelID === 'undefined')
+            console.log("\nNão existe channelID definido em config.json para |" + projectNamespace + "|\n");
+        else
+            client.channels.get(channelID).send( { embed: embed } );
     }
     catch (err) {
-        console.log("ERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction);
+        console.log("\nERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction+"\n");
     }
-        
-
 
     //manda uma resposta pra quem enviou o POST
     res.json({
@@ -84,5 +89,5 @@ var server = app.listen(port, "127.0.0.1", function () {
     var host = server.address().address
     var port = server.address().port
 
-    console.log('Example app listening at http://%s:%s', host, port);
+    console.log('Hook escutando em http://%s:%s', host, port);
 });
