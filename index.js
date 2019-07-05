@@ -85,7 +85,7 @@ app.post('/gitlab', function (req, res) {
 /**
  * Inicializar escuta do server ExpressJS
  */
-var server = app.listen(port, "127.0.0.1", function () {
+var server = app.listen(port, function () {
     var host = server.address().address
     var port = server.address().port
 
