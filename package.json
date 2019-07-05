@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: nenhum teste especificado\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "nodemon": "npx nodemon --delay 3 ./index.js"
   },
   "keywords": [
     "discord",
@@ -20,5 +21,8 @@
     "discord.js": "^11.5.1",
     "express": "^4.17.1",
     "glob": "^7.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
   }
 }

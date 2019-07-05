@@ -24,7 +24,7 @@ app.use(BodyParser.json());
 ////////////////////////////////////////////////// DiscordJS /////////////////////////////////////////////
 
 client.on('ready', () => {
-    console.log(`Bot inicializado como ${client.user.tag}!`);
+    console.log(`[Isi] Bot inicializado como ${client.user.tag}!`);
 });
 
 client.on('message', msg => {
@@ -89,5 +89,5 @@ var server = app.listen(port, "127.0.0.1", function () {
     var host = server.address().address
     var port = server.address().port
 
-    console.log('Hook escutando em http://%s:%s', host, port);
+    console.log('[Isi] Hook escutando em http://%s:%s', host, port);
 });
