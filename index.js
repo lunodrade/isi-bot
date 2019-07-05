@@ -50,7 +50,7 @@ app.post('/gitlab', function (req, res) {
 
     var fnEvent = json['object_kind'];
     var fnAction;
-    var projectNamespace = json['project']['namespace'];
+    var projectNamespace = json['project']['path_with_namespace'].split('/')[0];
 
     if(fnEvent == 'issue' || fnEvent == 'wiki_page') {
         fnAction = json['object_attributes']['action'];
