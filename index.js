@@ -5,8 +5,11 @@ const Express = require('express');
 const BodyParser = require('body-parser');
 const Discord = require('discord.js');
 const Glob = require("glob");
+
 const { spawn } = require('child_process');
 const { exec } = require('child_process');
+
+var Shell = require('./utils/shellHelper.js');
 
 const client = new Discord.Client();
 const app = Express();
@@ -98,6 +101,7 @@ const restartProcess = () => {
 }
 
 const updateRepo = () => {
+    /*
     const commands = [
         'git pull',
         'git status'
@@ -115,6 +119,25 @@ const updateRepo = () => {
             console.log(`==============================================================`);
         });
     });
+    */
+
+    /*
+    // execute a single shell command
+    Shell.exec('npm test --coverage', function(err){
+        console.log('executed test');
+    }});
+    */
+
+
+    // execute multiple commands in series
+    Shell.series([
+        'node --version',
+        'git pull',
+        'git status'
+    ], function(err){
+        console.log('executed many commands in a row'); 
+    });
+   
 
 }
 
@@ -124,7 +147,7 @@ app.get('/as', function (req, res) {
     var json = req.body;
 
     updateRepo();
-    //restartProcess();
+    restartProcess();
 
     //manda uma resposta pra quem enviou o GET (eg: acessar um site, requisitar dados de uma api)
     res.json({
