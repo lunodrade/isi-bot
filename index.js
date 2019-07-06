@@ -162,7 +162,7 @@ app.get('/oi', function (req, res) {
 
     //manda uma resposta pra quem enviou o GET (eg: acessar um site, requisitar dados de uma api)
     res.json({
-        message: 'oi! agora atualizado :)'
+        message: 'oi! agora atualizado e reiniciando :)'
     });
 });
 
