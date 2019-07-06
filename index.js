@@ -5,6 +5,8 @@ const Express = require('express');
 const BodyParser = require('body-parser');
 const Discord = require('discord.js');
 const Glob = require("glob");
+const { spawn } = require('child_process');
+const { exec } = require('child_process');
 
 const client = new Discord.Client();
 const app = Express();
@@ -45,6 +47,7 @@ client.login(Config.token);
 /**
  * Gerenciamento de requisições POST (webhook)
  */
+
 app.post('/gitlab', function (req, res) {
     var json = req.body;
 
@@ -79,6 +82,64 @@ app.post('/gitlab', function (req, res) {
     //manda uma resposta pra quem enviou o POST
     res.json({
         message: 'ok got it!'
+    });
+});
+
+
+
+
+const restartProcess = () => {
+    const subprocess = spawn(process.argv[0], process.argv.slice(1), {
+        detached: true,
+        stdio: ['inherit']
+    });
+    subprocess.unref();
+    process.exit();
+}
+
+const updateRepo = () => {
+    const commands = [
+        'git pull',
+        'git status'
+    ];
+
+    commands.forEach(cmd => {
+        exec(cmd, (err, stdout, stderr) => {
+            if (err) {
+              return;
+            }
+            // the *entire* stdout and stderr (buffered)
+            console.log(`===================== ${cmd} ========================`);
+            console.log(`stdout: ${stdout}`);
+            console.log(`stderr: ${stderr}`);
+            console.log(`==============================================================`);
+        });
+    });
+
+}
+
+//sha-1 de githubgenerator
+//34c472e52db92d7bc625907bc61af59d7a71bcc9
+app.get('/as', function (req, res) {
+    var json = req.body;
+
+    updateRepo();
+    //restartProcess();
+
+    //manda uma resposta pra quem enviou o GET (eg: acessar um site, requisitar dados de uma api)
+    res.json({
+        message: 'oi!'
+    });
+});
+
+//sha-1 de githubgenerator
+//34c472e52db92d7bc625907bc61af59d7a71bcc9
+app.get('/oi', function (req, res) {
+    var json = req.body;
+
+    //manda uma resposta pra quem enviou o GET (eg: acessar um site, requisitar dados de uma api)
+    res.json({
+        message: 'oi!'
     });
 });
 
