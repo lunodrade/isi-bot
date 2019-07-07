@@ -8,8 +8,8 @@ const Glob = require("glob");
 
 const { spawn } = require('child_process');
 const { exec } = require('child_process');
+var async = require("async");
 
-var Shell = require('./utils/shellHelper.js');
 
 const client = new Discord.Client();
 const app = Express();
@@ -101,44 +101,17 @@ const restartProcess = () => {
 }
 
 const updateRepo = () => {
-    /*
-    const commands = [
-        'git pull',
-        'git status'
-    ];
-
-    commands.forEach(cmd => {
-        exec(cmd, (err, stdout, stderr) => {
-            if (err) {
-              return;
-            }
-            // the *entire* stdout and stderr (buffered)
-            console.log(`===================== ${cmd} ========================`);
-            console.log(`stdout: ${stdout}`);
-            console.log(`stderr: ${stderr}`);
-            console.log(`==============================================================`);
+    async.series([
+        async.apply(exec, 'git pull'),
+        async.apply(exec, 'git status'),
+        async.apply(exec, 'node --version')
+    ], 
+    function (err, results) {
+        results.forEach(result => {
+            console.log("==========================================");
+            console.log(result[0].toString());
         });
     });
-    */
-
-    /*
-    // execute a single shell command
-    Shell.exec('npm test --coverage', function(err){
-        console.log('executed test');
-    }});
-    */
-
-
-    // execute multiple commands in series
-    Shell.series([
-        'node --version',
-        'git pull',
-        'git status'
-    ], function(err){
-        console.log('executed many commands in a row'); 
-    });
-   
-
 }
 
 //sha-1 de githubgenerator
