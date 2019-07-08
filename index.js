@@ -13,6 +13,7 @@ const client = new Discord.Client();
 const app = Express();
 const port = 3000;
 const channelLog = Config['channelID']['log'];
+var discordChannelLog;
 
 var GitlabEvents = [];
 Glob("gitlab/*.js", function (er, files) {
@@ -23,9 +24,11 @@ Glob("gitlab/*.js", function (er, files) {
 });
 
 function log(msg) {
-    const timestamp = new Date().toLocaleString('pt-br') + ' → ';
+    const timestamp = '[' + new Date().toLocaleString('pt-br') + '] ';
     console.log(timestamp + msg);
-    client.channels.get(channelLog).send(msg);
+
+    if(discordChannelLog)
+        discordChannelLog.send(timestamp + msg);
 }
 
 app.use(BodyParser.json());
@@ -33,6 +36,8 @@ app.use(BodyParser.json());
 ////////////////////////////////////////////////// DiscordJS /////////////////////////////////////////////
 
 client.on('ready', () => {
+    discordChannelLog = client.channels.get(channelLog);
+
     log(`[Isi] Bot inicializado como ${client.user.tag}!`);
 });
 
