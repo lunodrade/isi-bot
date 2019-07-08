@@ -5,16 +5,14 @@ const Express = require('express');
 const BodyParser = require('body-parser');
 const Discord = require('discord.js');
 const Glob = require("glob");
-
-const { spawn } = require('child_process');
+var Async = require("async");
 const { exec } = require('child_process');
-var async = require("async");
-
+const Config = require("./config.json");
 
 const client = new Discord.Client();
 const app = Express();
 const port = 3000;
-const Config = require("./config.json");
+const channelLog = Config['channelID']['log'];
 
 var GitlabEvents = [];
 Glob("gitlab/*.js", function (er, files) {
@@ -24,12 +22,18 @@ Glob("gitlab/*.js", function (er, files) {
     });
 });
 
+function log(msg) {
+    const timestamp = new Date().toLocaleString('pt-br') + ' → ';
+    console.log(timestamp + msg);
+    client.channels.get(channelLog).send(msg);
+}
+
 app.use(BodyParser.json());
 
 ////////////////////////////////////////////////// DiscordJS /////////////////////////////////////////////
 
 client.on('ready', () => {
-    console.log(`[Isi] Bot inicializado como ${client.user.tag}!`);
+    log(`[Isi] Bot inicializado como ${client.user.tag}!`);
 });
 
 client.on('message', msg => {
@@ -65,7 +69,7 @@ app.post('/gitlab', function (req, res) {
     } else if (fnEvent == 'push' || fnEvent == 'tag_push') {
         fnAction = 'send';
     } else {
-        console.log('Sem tratamento para: ' + fnEvent);
+        log('Sem tratamento para: ' + fnEvent);
     }
     
     //tenta pegar os dados, e caso tenha campos com erros no json, só reportar o erro e seguir em frente
@@ -74,12 +78,12 @@ app.post('/gitlab', function (req, res) {
         var channelID = Config['channelID'][projectNamespace];
 
         if(typeof channelID === 'undefined')
-            console.log("\nNão existe channelID definido em config.json para |" + projectNamespace + "|\n");
+            log("\nNão existe channelID definido em config.json para |" + projectNamespace + "|\n");
         else
             client.channels.get(channelID).send( { embed: embed } );
     }
     catch (err) {
-        console.log("\nERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction+"\n");
+        log("\nERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction+"\n");
     }
 
     //manda uma resposta pra quem enviou o POST
@@ -88,54 +92,46 @@ app.post('/gitlab', function (req, res) {
     });
 });
 
-
-
-
-const restartProcess = () => {
-    const subprocess = spawn(process.argv[0], process.argv.slice(1), {
-        detached: true,
-        stdio: ['inherit']
-    });
-    subprocess.unref();
-    process.exit();
-}
-
 const updateRepo = () => {
-    async.series([
-        async.apply(exec, 'git pull'),
-        async.apply(exec, 'git status'),
-        async.apply(exec, 'node --version')
+    Async.series([
+        Async.apply(exec, 'git pull'),
+        Async.apply(exec, 'git status'),
+        Async.apply(exec, 'node --version')
     ], 
     function (err, results) {
         results.forEach(result => {
-            console.log("==========================================");
-            console.log(result[0].toString());
+            log("==========================================");
+            log(result[0].toString());
         });
     });
 }
 
-//sha-1 de githubgenerator
+//sha-1 de githubwebhook
 //34c472e52db92d7bc625907bc61af59d7a71bcc9
-app.get('/as', function (req, res) {
+app.post('/34c472e52db92d7bc625907bc61af59d7a71bcc9', function (req, res) {
     var json = req.body;
 
-    updateRepo();
-    //restartProcess();
+    if(json['ref'] == 'refs/heads/master' && json['pusher']) {
+        if(json['pusher']['name'] == 'lunodrade') {                     //aqui vai todos users autorizados
+            log('Atualizando repo local devido a push no github');
+            updateRepo();
+            //restartProcess();  //feito pelo nodemon, usando 'node run nodemon' pra iniciar o processo aqui
+        }
+    }
 
     //manda uma resposta pra quem enviou o GET (eg: acessar um site, requisitar dados de uma api)
     res.json({
-        message: 'oi!'
+        message: 'Webhook recebido com sucesso!'
     });
 });
 
-//sha-1 de githubgenerator
-//34c472e52db92d7bc625907bc61af59d7a71bcc9
+//apenas teste de expressjs
 app.get('/oi', function (req, res) {
     var json = req.body;
 
     //manda uma resposta pra quem enviou o GET (eg: acessar um site, requisitar dados de uma api)
     res.json({
-        message: 'oi! testando com npx nodemon :)'
+        message: 'Oi!'
     });
 });
 
@@ -146,5 +142,5 @@ var server = app.listen(port, function () {
     var host = server.address().address
     var port = server.address().port
 
-    console.log('[Isi] Hook escutando em http://%s:%s', host, port);
+    log(`[Isi] Hook escutando em http://${host}:${port}`);
 });
