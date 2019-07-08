@@ -99,9 +99,9 @@ app.post('/gitlab', function (req, res) {
 
 const updateRepo = () => {
     Async.series([
+        Async.apply(exec, 'git checkout -- .'),
         Async.apply(exec, 'git pull'),
-        Async.apply(exec, 'git status'),
-        Async.apply(exec, 'node --version')
+        Async.apply(exec, 'git status')
     ], 
     function (err, results) {
         results.forEach(result => {
