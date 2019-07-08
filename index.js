@@ -83,12 +83,12 @@ app.post('/gitlab', function (req, res) {
         var channelID = Config['channelID'][projectNamespace];
 
         if(typeof channelID === 'undefined')
-            log("\nNão existe channelID definido em config.json para |" + projectNamespace + "|\n");
+            log("Não existe channelID definido em config.json para |" + projectNamespace + "|\n");
         else
             client.channels.get(channelID).send( { embed: embed } );
     }
     catch (err) {
-        log("\nERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction+"\n");
+        log("ERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction+"\n");
     }
 
     //manda uma resposta pra quem enviou o POST
