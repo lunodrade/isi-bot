@@ -5,7 +5,7 @@ const Emoji = Config['emoji'];
 module.exports = {
 
     /////////////////////////////////////////////////// OPEN //////////////////////////////////////////////////////
-    openEmbed: function (embedClass, json) {
+    openEmbed: function (embedClass, json, avatar) {
         var embed = new embedClass();
 
         var user = json['user'];
@@ -14,12 +14,11 @@ module.exports = {
         var labels = json['labels'];
 
         embed.setColor(Color['open']);
-        //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
-        embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
+        embed.setAuthor(user['name'], avatar);
 
         embed.setTitle('Issue #'+attr['iid']+" aberto: "+attr['title']);
         embed.setURL(attr['url']);
-        embed.setDescription(attr['description']);
+        embed.setDescription(attr['description'].substring(0, 2000));
 
         var assignee = json['assignees'] ? json['assignees'][0]['name'] : "ninguém";
         embed.addField('Responsável', assignee, true);
@@ -29,20 +28,20 @@ module.exports = {
         labels.forEach(label => {
             labelsStr += "\`" + label['title'] + "\`, ";
         });
-        if(labels.length > 0)
-            labelsStr = labelsStr.slice(0, labelsStr.length-2);
-        else
+        if(labels.length == 0)
             labelsStr = "--";
 
         embed.addField('Labels', labelsStr, true);
 
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")");
 
+        embed.setFooter('Issue open').setTimestamp();
+
         return embed;
     },
 
     /////////////////////////////////////////////////// CLOSE //////////////////////////////////////////////////////
-    closeEmbed: function (embedClass, json) {
+    closeEmbed: function (embedClass, json, avatar) {
         var embed = new embedClass();
 
         var user = json['user'];
@@ -51,12 +50,11 @@ module.exports = {
         var labels = json['labels'];
 
         embed.setColor(Color['close']);
-        //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
-        embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
+        embed.setAuthor(user['name'], avatar);
 
         embed.setTitle('Issue #'+attr['iid']+" encerrado: "+attr['title']);
         embed.setURL(attr['url']);
-        embed.setDescription(attr['description']);
+        embed.setDescription(attr['description'].substring(0, 2000));
 
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")", true);
 
@@ -64,17 +62,17 @@ module.exports = {
         labels.forEach(label => {
             labelsStr += "\`" + label['title'] + "\` ";
         });
-        if(labels.length > 0)
-            labelsStr = labelsStr.slice(0, labelsStr.length-2);
-        else
+        if(labels.length == 0)
             labelsStr = "--";
         embed.addField('Labels', labelsStr, true);
+
+        embed.setFooter('Issue close').setTimestamp();
 
         return embed;
     },
 
     /////////////////////////////////////////////////// REOPEN //////////////////////////////////////////////////////
-    reopenEmbed: function (embedClass, json) {
+    reopenEmbed: function (embedClass, json, avatar) {
         var embed = new embedClass();
 
         var user = json['user'];
@@ -83,12 +81,11 @@ module.exports = {
         var labels = json['labels'];
 
         embed.setColor(Color['reopen']);
-        //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
-        embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
+        embed.setAuthor(user['name'], avatar);
 
         embed.setTitle('Issue #'+attr['iid']+" reaberto: "+attr['title']);
         embed.setURL(attr['url']);
-        embed.setDescription(attr['description']);
+        embed.setDescription(attr['description'].substring(0, 2000));
 
         var assignee = json['assignees'] ? json['assignees'][0]['name'] : "ninguém";
         embed.addField('Responsável', assignee, true);
@@ -98,19 +95,19 @@ module.exports = {
         labels.forEach(label => {
             labelsStr += "\`" + label['title'] + "\` ";
         });
-        if(labels.length > 0)
-            labelsStr = labelsStr.slice(0, labelsStr.length-2);
-        else
+        if(labels.length == 0)
             labelsStr = "--";
         embed.addField('Labels', labelsStr, true);
 
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")");
 
+        embed.setFooter('Issue reopen').setTimestamp();
+
         return embed;
     },
 
     /////////////////////////////////////////////////// UPDATE //////////////////////////////////////////////////////
-    updateEmbed: function (embedClass, json) {
+    updateEmbed: function (embedClass, json, avatar) {
         var embed = new embedClass();
 
         var user = json['user'];
@@ -119,12 +116,11 @@ module.exports = {
         var labels = json['labels'];
 
         embed.setColor(Color['update']);
-        //embed.setAuthor(user['name']+" → "+proj['namespace'], user['avatar_url']);
-        embed.setAuthor(user['name'], "https://i.imgur.com/lm8s41J.png");
+        embed.setAuthor(user['name'], avatar);
 
         embed.setTitle('Issue #'+attr['iid']+" atualizado: "+attr['title']);
         embed.setURL(attr['url']);
-        embed.setDescription(attr['description']);
+        embed.setDescription(attr['description'].substring(0, 2000));
 
         var assignee = json['assignees'] ? json['assignees'][0]['name'] : "ninguém";
         embed.addField('Responsável', assignee, true);
@@ -134,15 +130,15 @@ module.exports = {
         labels.forEach(label => {
             labelsStr += "\`" + label['title'] + "\` ";
         });
-        if(labels.length > 0)
-            labelsStr = labelsStr.slice(0, labelsStr.length-2);
-        else
+        if(labels.length == 0)
             labelsStr = "--";
         embed.addField('Labels', labelsStr, true);
 
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")");
 
         embed.addField('TODO', 'adicionar changes', true);
+
+        embed.setFooter('Issue update').setTimestamp();
 
         return embed;
     }

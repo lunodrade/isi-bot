@@ -5,19 +5,6 @@
         "removed": "<:removed:596342162438881291>"
     },
 
-    "channelID": {
-        "log": "597773342812012557",
-
-        "su40": "594160912819290112",
-        "isisim": "594160672120504331",
-        "skyvideo": "593141383942897674",
-        "migra": "594161739847696384",
-        "falker": "597851698802720778",
-        "aacd": "598128113657970698",
-
-        "lunodrade": "193421996883836928"
-    },
-
     "color": {
         "create": "#7CB342",
         "delete": "#e53935",
@@ -30,5 +17,22 @@
         "update": "#00ACC1",
         
         "push": "#FB8C00"
+    },
+
+    "users": {
+        "lunodrade": "98986994163519488",
+        "luciano.andrade": "98986994163519488",
+        "pedro.freitas": "287317041055268864",
+        "julio.radavelli": "",
+        "guilherme.tischer": "",
+        "guilherme.pettersen": "",
+        "flavio.avila": "",
+        "filipe.santos": "",
+        "davi.bobsin": "229329223947386881",
+        "trasatti": "",
+        "lucas.fukumoto": "214444976866590721",
+        "greice.teixeira": "588351310705852437",
+        "maikovisky": "586260606219321347",
+        "renan.dame": "547010732605308928"
     }
 }

@@ -5,13 +5,13 @@ const Emoji = Config['emoji'];
 module.exports = {
 
     /////////////////////////////////////////////////// ISSUE //////////////////////////////////////////////////////
-    sendEmbed: function (embedClass, json) {
+    sendEmbed: function (embedClass, json, avatar) {
         var embed = new embedClass();
 
         var proj = json['project'];
 
         embed.setColor(Color['push']);
-        embed.setAuthor(json['user_name'], "https://i.imgur.com/lm8s41J.png");
+        embed.setAuthor(json['user_name'], avatar);
 
         var branch = json['ref'].split('/').slice(2).join('/');
         embed.setTitle('Executou push na branch \`' + branch + '\`');
@@ -35,9 +35,11 @@ module.exports = {
             commitsStr += '[\`' + commitId + '\`]('+urlCommit+'): ' + commit['message'] + ' → ' + changes;
             commitsStr += "\n";
         });
-        embed.setDescription(commitsStr);
+        embed.setDescription(commitsStr.substring(0, 2000));
 
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")", true);
+
+        embed.setFooter('Push').setTimestamp();
        
         return embed;
     },

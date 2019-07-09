@@ -7,7 +7,10 @@ const Discord = require('discord.js');
 const Glob = require("glob");
 var Async = require("async");
 const { exec } = require('child_process');
+const User = require("./utils/user.js");
+
 const Config = require("./config.json");
+const Channels = require("./channels.json");
 const Auth = require("./auth.json");
 
 const BotPrefix = '>';
@@ -15,7 +18,7 @@ const BotPrefix = '>';
 const client = new Discord.Client();
 const app = Express();
 const port = 3000;
-const channelLog = Config['channelID']['log'];
+const channelLog = Channels['log'];
 var discordChannelLog;
 
 var GitlabEvents = [];
@@ -27,7 +30,7 @@ Glob("gitlab/*.js", function (er, files) {
 });
 
 function log(msg) {
-    const timestamp = '[' + new Date().toLocaleString('pt-br') + '] ';
+    const timestamp = '[' + new Date().toString().substr(4, 20) + '] ';
     console.log(timestamp + msg);
 
     if(discordChannelLog)
@@ -35,6 +38,7 @@ function log(msg) {
 }
 
 app.use(BodyParser.json());
+
 
 ////////////////////////////////////////////////// DiscordJS /////////////////////////////////////////////
 
@@ -69,6 +73,42 @@ client.login(Auth.token);
 
 ////////////////////////////////////////////////// ExpressJS /////////////////////////////////////////////
 
+async function sendEmbedToDiscord(fnEvent, fnAction, username, json, projectNamespace) {
+    var avatar = await User.getAvatar(client, username);
+    var heyMessage = "";
+    if (!avatar)
+        log(`Não existe user linkado para |${username}| no arquivo de config.json`);
+
+    if (fnEvent == "issue") {
+        if (fnAction == "open" || fnAction == "reopen" || fnAction == "update") {
+            heyMessage = "Hey ";
+            json['assignees'].forEach(assignee => {
+                let userID = Config['users'][assignee['username']];
+                heyMessage += "<@" + userID + "> ";
+            });
+            if (json['assignees'].length > 1) 
+                heyMessage += "deem uma olhada no card abaixo.";
+            else
+                heyMessage += "da uma olhada no card abaixo.";
+        }
+    }
+
+    //tenta pegar os dados, e caso tenha campos com erros no json, só reportar o erro e seguir em frente
+    try {
+        var embed = GitlabEvents[fnEvent][fnAction+"Embed"](Discord.RichEmbed, json, avatar);
+        var channelID = Channels[projectNamespace];
+
+        if(typeof channelID === 'undefined')
+            log("Não existe channelID definido em config.json para |" + projectNamespace + "|\n");
+        else {
+            client.channels.get(channelID).send( heyMessage, { embed: embed } );
+        }
+    }
+    catch (err) {
+        log("ERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction+"\n");
+    }
+}
+
 /**
  * Gerenciamento de requisições POST (webhook)
  */
@@ -78,31 +118,24 @@ app.post('/gitlab', function (req, res) {
 
     var fnEvent = json['object_kind'];
     var fnAction;
+    var username;
+    var assignees = [];
     var projectNamespace = json['project']['path_with_namespace'].split('/')[0];
 
     if(fnEvent == 'issue' || fnEvent == 'wiki_page') {
         fnAction = json['object_attributes']['action'];
+        username = json['user']['username'];
     } else if (fnEvent == 'note') {
         fnAction = json['object_attributes']['noteable_type'].toLowerCase();
+        username = json['user']['username'];
     } else if (fnEvent == 'push' || fnEvent == 'tag_push') {
         fnAction = 'send';
+        username = json['user_username'];
     } else {
         log('Sem tratamento para: ' + fnEvent);
     }
     
-    //tenta pegar os dados, e caso tenha campos com erros no json, só reportar o erro e seguir em frente
-    try {
-        var embed = GitlabEvents[fnEvent][fnAction+"Embed"](Discord.RichEmbed, json);
-        var channelID = Config['channelID'][projectNamespace];
-
-        if(typeof channelID === 'undefined')
-            log("Não existe channelID definido em config.json para |" + projectNamespace + "|\n");
-        else
-            client.channels.get(channelID).send( { embed: embed } );
-    }
-    catch (err) {
-        log("ERRO: " + err + " → evento: "+fnEvent+" → action: "+fnAction+"\n");
-    }
+    sendEmbedToDiscord(fnEvent, fnAction, username, json, projectNamespace);
 
     //manda uma resposta pra quem enviou o POST
     res.json({
@@ -117,7 +150,7 @@ const updateRepo = () => {
     ], 
     function (err, results) {
         results.forEach(result => {
-            log(result[0].toString()+"\n\n");
+            log("```\n"+result[0].toString()+"\n\n```");
         });
     });
 }
