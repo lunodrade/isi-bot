@@ -1,6 +1,5 @@
 # Token/Passwords
-config.json
-package-lock.json
+auth.json
 
 # Logs
 logs

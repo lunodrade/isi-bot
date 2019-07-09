@@ -8,6 +8,9 @@ const Glob = require("glob");
 var Async = require("async");
 const { exec } = require('child_process');
 const Config = require("./config.json");
+const Auth = require("./auth.json");
+
+const BotPrefix = '>';
 
 const client = new Discord.Client();
 const app = Express();
@@ -38,21 +41,31 @@ app.use(BodyParser.json());
 client.on('ready', () => {
     discordChannelLog = client.channels.get(channelLog);
 
-    log(`[Isi] Bot inicializado como ${client.user.tag}!`);
+    var div = '====================================================================================';
+    log(`\n\n\n${div}\n[Isi] Bot inicializado como ${client.user.tag}!\n${div}\n\n`);
 });
 
-client.on('message', msg => {
-    //o bot não pode responder ele mesmo;
-    if(msg.author.bot)
+client.on('message', message => {
+    //responder só o que começa com o prefixo, e o bot não responder ele mesmo
+    if (!message.content.startsWith(BotPrefix) || message.author.bot) {
         return;
+    }
+
+    let cmd = "";
+    let args = message.content.match(/(?:[^\s"]+|"[^"]*")+/gm);
+    if(args == null) {
+        args = [];
+    } else {
+        cmd = args.shift().substr(1);
+    }
 
     //controle de mensagens que o bot lê nos canais
-    if (msg.content === 'ping') {
-        msg.reply('pong');
+    if (cmd === 'ping') {
+        message.reply('pong');
     }
 });
 
-client.login(Config.token);
+client.login(Auth.token);
 
 ////////////////////////////////////////////////// ExpressJS /////////////////////////////////////////////
 
@@ -99,14 +112,12 @@ app.post('/gitlab', function (req, res) {
 
 const updateRepo = () => {
     Async.series([
-        Async.apply(exec, 'git checkout -- .'),
         Async.apply(exec, 'git pull'),
         Async.apply(exec, 'git status')
     ], 
     function (err, results) {
         results.forEach(result => {
-            log("==========================================");
-            log(result[0].toString());
+            log(result[0].toString()+"\n\n");
         });
     });
 }
