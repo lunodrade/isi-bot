@@ -1,25 +1,19 @@
-/**
- * Carregamento de bibliotecas e inicialização da variáveis globais
- */
+/*******************************************************************************
+ * 
+ * Carregamento de bibliotecas
+ * 
+ *******************************************************************************/
 const Express = require('express');
 const BodyParser = require('body-parser');
 const Discord = require('discord.js');
 const Glob = require("glob");
-var Async = require("async");
+const Async = require("async");
 const { exec } = require('child_process');
 const User = require("./utils/user.js");
 
 const Config = require("./config.json");
 const Channels = require("./channels.json");
 const Auth = require("./auth.json");
-
-const BotPrefix = '>';
-
-const client = new Discord.Client();
-const app = Express();
-const port = 3000;
-const channelLog = Channels['log'];
-var discordChannelLog;
 
 var GitlabEvents = [];
 Glob("gitlab/*.js", function (er, files) {
@@ -29,6 +23,19 @@ Glob("gitlab/*.js", function (er, files) {
     });
 });
 
+/*******************************************************************************
+ * 
+ * Inicialização de funções e variáveis globais
+ * 
+ *******************************************************************************/
+const BotPrefix = '>';
+
+const client = new Discord.Client();
+const app = Express();
+const port = 3000;
+const channelLog = Channels['log'];
+var discordChannelLog;
+
 function log(msg) {
     const timestamp = '[' + new Date().toString().substr(4, 20) + '] ';
     console.log(timestamp + msg);
@@ -37,15 +44,19 @@ function log(msg) {
         discordChannelLog.send(timestamp + msg);
 }
 
+//faz com que todos {req.body} do expressjs já estejam em JSON
 app.use(BodyParser.json());
 
-
-////////////////////////////////////////////////// DiscordJS /////////////////////////////////////////////
+/*******************************************************************************
+ * 
+ * Inicialização do DiscordJS e parser de comando
+ * 
+ *******************************************************************************/
 
 client.on('ready', () => {
     discordChannelLog = client.channels.get(channelLog);
 
-    var div = '====================================================================================';
+    var div = '='.repeat(84);
     log(`\n\n\n${div}\n[Isi] Bot inicializado como ${client.user.tag}!\n${div}\n\n`);
 });
 
@@ -55,6 +66,9 @@ client.on('message', message => {
         return;
     }
 
+    //a primeira palavra é comando, o resto é argumento
+    //separa os argumentos ao achar espaço entre eles
+    //porém ignora espaços dentro de strings
     let cmd = "";
     let args = message.content.match(/(?:[^\s"]+|"[^"]*")+/gm);
     if(args == null) {
@@ -69,19 +83,39 @@ client.on('message', message => {
     }
 });
 
+//inicializar o cliente do discord
 client.login(Auth.token);
 
-////////////////////////////////////////////////// ExpressJS /////////////////////////////////////////////
+/*******************************************************************************
+ * 
+ * Serve ExpressJS
+ * 
+ * Ele recebe os webhooks do gitlab
+ * Ele recebo o webhook do github que autoatualiza o projeto
+ * 
+ *******************************************************************************/
 
 async function sendEmbedToDiscord(fnEvent, fnAction, username, json, projectNamespace) {
-    var avatar = await User.getAvatar(client, username);
-    var heyMessage = "";
+    let heyMessage = "";
+    let sendHey = false;
+
+    //pegar a foto do usuário de modo forçado (o cache do discord pode nem sempre ter a foto)
+    //este modo é assíncrono, então com o await forçar a espera da resposta para continuar
+    let avatar = await User.getAvatar(client, username);
     if (!avatar)
         log(`Não existe user linkado para |${username}| no arquivo de config.json`);
 
+    //analisar se o event/action poderia mencionar usuários
     if (fnEvent == "issue") {
         if (fnAction == "open" || fnAction == "reopen" || fnAction == "update") {
-            heyMessage = "Hey ";
+            sendHey = true;
+        }
+    }
+
+    //processar os usuários que serão mencionados logo acima do embed
+    if (sendHey) {
+        heyMessage = "Hey ";
+        if (json['assignees']) {
             json['assignees'].forEach(assignee => {
                 let userID = Config['users'][assignee['username']];
                 heyMessage += "<@" + userID + "> ";
@@ -109,40 +143,49 @@ async function sendEmbedToDiscord(fnEvent, fnAction, username, json, projectName
     }
 }
 
-/**
- * Gerenciamento de requisições POST (webhook)
- */
-
+/************************************************************
+ * Receber o POST do webhook vindo do Gitlab
+ ***********************************************************/
 app.post('/gitlab', function (req, res) {
+    //variáveis chaves utilizadas na analize e criação do webhook
     var json = req.body;
-
     var fnEvent = json['object_kind'];
     var fnAction;
     var username;
-    var assignees = [];
     var projectNamespace = json['project']['path_with_namespace'].split('/')[0];
 
-    if(fnEvent == 'issue' || fnEvent == 'wiki_page') {
+    //analisa qual Event/Action, para saber a estrutura de embed que será chamada
+    if(fnEvent == 'issue' || fnEvent == 'wiki_page' || fnEvent == 'merge_request') {
         fnAction = json['object_attributes']['action'];
         username = json['user']['username'];
     } else if (fnEvent == 'note') {
         fnAction = json['object_attributes']['noteable_type'].toLowerCase();
         username = json['user']['username'];
-    } else if (fnEvent == 'push' || fnEvent == 'tag_push') {
-        fnAction = 'send';
+    } else if (fnEvent == 'push') {
+        if (json['before'] === '0000000000000000000000000000000000000000')
+            fnAction = 'newBranch';
+        else
+            fnAction = 'push';
+        username = json['user_username'];
+    } else if (fnEvent == 'tag_push') {
+        fnAction = 'tagpush';
         username = json['user_username'];
     } else {
         log('Sem tratamento para: ' + fnEvent);
     }
     
+    //cria e envia o embed pro canal do Discord
     sendEmbedToDiscord(fnEvent, fnAction, username, json, projectNamespace);
 
-    //manda uma resposta pra quem enviou o POST
+    //manda uma resposta pra quem enviou o POST (webhook do gitlab)
     res.json({
         message: 'ok got it!'
     });
 });
 
+/************************************************************
+ * Função que autoatualiza o repositório no server
+ ***********************************************************/
 const updateRepo = () => {
     Async.series([
         Async.apply(exec, 'git pull'),
@@ -150,17 +193,19 @@ const updateRepo = () => {
     ], 
     function (err, results) {
         results.forEach(result => {
-            log("```\n"+result[0].toString()+"\n\n```");
+            log("Resultados:\n\`\`\`\n"+result[0].toString()+"\n\n\`\`\`");
         });
     });
 }
 
-//sha-1 de githubwebhook
-//34c472e52db92d7bc625907bc61af59d7a71bcc9
+/************************************************************
+ * Aqui o webhook vindo do gitlab é recebido e analisado
+ * sha-1 de githubwebhook → 34c472e52db92d7bc625907bc61af59d7a71bcc9
+ ***********************************************************/
 app.post('/34c472e52db92d7bc625907bc61af59d7a71bcc9', function (req, res) {
     var json = req.body;
 
-    if(json['ref'] == 'refs/heads/master' && json['pusher']) {
+    if(json['ref'] == 'refs/heads/master' && json['pusher']) {          //só quando for na branch master
         if(json['pusher']['name'] == 'lunodrade') {                     //aqui vai todos users autorizados
             log('Atualizando repo local devido a push no github');
             updateRepo();
@@ -168,13 +213,15 @@ app.post('/34c472e52db92d7bc625907bc61af59d7a71bcc9', function (req, res) {
         }
     }
 
-    //manda uma resposta pra quem enviou o GET (eg: acessar um site, requisitar dados de uma api)
+    //manda uma resposta pra quem enviou o POST (webhook do github)
     res.json({
         message: 'Webhook recebido com sucesso!'
     });
 });
 
-//apenas teste de expressjs
+/************************************************************
+ * Apenas para teste
+ ***********************************************************/
 app.get('/oi', function (req, res) {
     var json = req.body;
 
@@ -184,9 +231,9 @@ app.get('/oi', function (req, res) {
     });
 });
 
-/**
- * Inicializar escuta do server ExpressJS
- */
+/************************************************************
+ * Inicializar o ExpressJS
+ ***********************************************************/
 var server = app.listen(port, function () {
     var host = server.address().address
     var port = server.address().port

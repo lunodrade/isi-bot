@@ -5,7 +5,7 @@ const Emoji = Config['emoji'];
 module.exports = {
 
     /////////////////////////////////////////////////// ISSUE //////////////////////////////////////////////////////
-    sendEmbed: function (embedClass, json, avatar) {
+    pushEmbed: function (embedClass, json, avatar) {
         var embed = new embedClass();
 
         var proj = json['project'];
@@ -39,9 +39,35 @@ module.exports = {
 
         embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")", true);
 
+        let urlBranch = proj['web_url'] + '/tree/' + branch;
+        embed.addField('Branch', `[${branch}](${urlBranch})`, true);
+
         embed.setFooter('Push').setTimestamp();
        
         return embed;
     },
+
+    /////////////////////////////////////////////////// ISSUE //////////////////////////////////////////////////////
+    newBranchEmbed: function (embedClass, json, avatar) {
+        var embed = new embedClass();
+
+        var proj = json['project'];
+
+        embed.setColor(Color['update']);
+        embed.setAuthor(json['user_name'], avatar);
+
+        var branch = json['ref'].split('/').slice(2).join('/');
+        embed.setTitle('Nova branch criada: \`' + branch + '\`');
+        let urlBranch = proj['web_url'] + '/tree/' + branch;
+        embed.setURL(urlBranch);
+
+        embed.addField(proj['namespace'], "["+proj['path_with_namespace']+"]("+proj['homepage']+")", true);
+
+        embed.addField('Branch default', proj['default_branch'], true);
+
+        embed.setFooter('New branch').setTimestamp();
+       
+        return embed;
+    }
     
 };

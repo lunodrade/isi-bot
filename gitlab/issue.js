@@ -26,7 +26,7 @@ module.exports = {
 
         var labelsStr = "";
         labels.forEach(label => {
-            labelsStr += "\`" + label['title'] + "\`, ";
+            labelsStr += "\`" + label['title'] + "\` ";
         });
         if(labels.length == 0)
             labelsStr = "--";

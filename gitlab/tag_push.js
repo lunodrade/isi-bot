@@ -5,7 +5,7 @@ const Emoji = Config['emoji'];
 module.exports = {
 
     /////////////////////////////////////////////////// ISSUE //////////////////////////////////////////////////////
-    sendEmbed: function (embedClass, json, avatar) {
+    tagpushEmbed: function (embedClass, json, avatar) {
         var embed = new embedClass();
 
         var proj = json['project'];
