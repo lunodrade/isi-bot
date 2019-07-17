@@ -207,7 +207,11 @@ app.post('/gitlab', function(req, res) {
  ***********************************************************/
 const updateRepo = () => {
   Async.series(
-    [Async.apply(exec, 'git pull'), Async.apply(exec, 'git status')],
+    [
+      Async.apply(exec, 'git pull'),
+      Async.apply(exec, 'cp channels.example.json channels.json'),
+      Async.apply(exec, 'git status')
+    ],
     function(err, results) {
       results.forEach(result => {
         log('Resultados:\n```\n' + result[0].toString() + '\n\n```');

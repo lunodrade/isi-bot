@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: nenhum teste especificado\" && exit 1",
     "start": "node index.js",
-    "watch": "npx nodemon --delay 3 ./index.js"
+    "watch": "npx nodemon --delay 10 ./index.js",
+    "watch-dev": "npx nodemon --delay 2 ./index.js"
   },
   "keywords": [
     "discord",
