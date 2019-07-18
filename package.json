@@ -1,6 +1,6 @@
 {
   "name": "isi-bot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Bot para Discord com funções internas da ISI",
   "main": "index.js",
   "scripts": {
