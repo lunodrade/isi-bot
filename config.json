@@ -1,38 +1,39 @@
 {
-    "emoji": {
-        "added": "<:added:596342162581618700>",
-        "modified": "<:edited:596345065295708180>",
-        "removed": "<:removed:596342162438881291>"
-    },
+  "emoji": {
+    "added": "<:added:596342162581618700>",
+    "modified": "<:edited:596345065295708180>",
+    "removed": "<:removed:596342162438881291>"
+  },
 
-    "color": {
-        "create": "#7CB342",
-        "delete": "#e53935",
+  "color": {
+    "create": "#7CB342",
+    "delete": "#e53935",
 
-        "note": "#3949AB",
-        
-        "open": "#e53935",
-        "close": "#7CB342",
-        "reopen": "#e53935",
-        "update": "#00ACC1",
-        
-        "push": "#FB8C00"
-    },
+    "note": "#3949AB",
 
-    "users": {
-        "lunodrade": "98986994163519488",
-        "luciano.andrade": "98986994163519488",
-        "pedro.freitas": "287317041055268864",
-        "julio.radavelli": "",
-        "guilherme.tischer": "",
-        "guilherme.pettersen": "",
-        "flavio.avila": "",
-        "filipe.santos": "",
-        "davi.bobsin": "229329223947386881",
-        "trasatti": "",
-        "lucas.fukumoto": "214444976866590721",
-        "greice.teixeira": "588351310705852437",
-        "maikovisky": "586260606219321347",
-        "renan.dame": "547010732605308928"
-    }
+    "open": "#e53935",
+    "close": "#7CB342",
+    "reopen": "#e53935",
+    "update": "#00ACC1",
+
+    "push": "#FB8C00"
+  },
+
+  "users": {
+    "lunodrade": "98986994163519488",
+    "luciano.andrade": "98986994163519488",
+    "pedro.freitas": "287317041055268864",
+    "julio.radavelli": "",
+    "guilherme.tischer": "239087775784239109",
+    "guilherme.pettersen": "",
+    "flavio.avila": "",
+    "filipe.santos": "",
+    "davi.bobsin": "229329223947386881",
+    "trasatti": "",
+    "lucas.fukumoto": "214444976866590721",
+    "greice.teixeira": "588351310705852437",
+    "maikovisky": "586260606219321347",
+    "renan.dame": "547010732605308928",
+    "eric.menezes": "386547510648373249"
+  }
 }

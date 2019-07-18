@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: nenhum teste especificado\" && exit 1",
+    "eslint": ".\\node_modules\\.bin\\eslint --init",
     "start": "node index.js",
     "watch": "npx nodemon --delay 10 ./index.js",
-    "watch-dev": "npx nodemon --delay 2 ./index.js"
+    "watch-dev": "npx nodemon --delay 3 ./index.js --test"
   },
   "keywords": [
     "discord",
@@ -25,6 +26,8 @@
     "glob": "^7.1.4"
   },
   "devDependencies": {
+    "eslint": "^6.0.1",
+    "eslint-config-google": "^0.13.0",
     "nodemon": "^1.19.1"
   }
 }
