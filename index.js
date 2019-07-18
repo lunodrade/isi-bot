@@ -51,7 +51,9 @@ let discordChannelLog;
  * @param {*} msg mensagem que sera usada para log
  */
 function log(msg) {
-  const timestamp = '[' + new Date().toString().substr(4, 20) + '] ';
+  let timestamp = new Date();
+  timestamp.setUTCHours(16);
+  timestamp = '[' + timestamp.toString().substr(4, 20) + '] ';
   console.log(timestamp + msg);
 
   if (discordChannelLog) discordChannelLog.send(timestamp + msg);
@@ -108,11 +110,11 @@ client.login(Auth.token);
  * Ele recebe os webhooks do gitlab
  * Ele recebo o webhook do github que autoatualiza o projeto
  *
- * @param {*} fnEvent tipo de evento do gitlab
- * @param {*} fnAction ação deste evento
- * @param {*} username username
- * @param {*} json conteúdo do webhook
- * @param {*} projectNamespace nome da pasta do projeto que enviou webhook
+ * @param {String} fnEvent tipo de evento do gitlab
+ * @param {String} fnAction ação deste evento
+ * @param {String} username username
+ * @param {JSON}   json conteúdo do webhook
+ * @param {String} projectNamespace nome da pasta do projeto que enviou webhook
  *
  ******************************************************************************/
 async function sendEmbedToDiscord(
@@ -228,13 +230,20 @@ app.post('/gitlab', function(req, res) {
 const updateRepo = () => {
   Async.series(
       [
-        Async.apply(exec, 'echo $(hostname) && echo $PWD'),
+        Async.apply(
+            exec,
+            // eslint-disable-next-line no-multi-str
+            'echo $(hostname) && \
+            echo $PWD && \
+            echo $(hostnamectl | grep Operating) && \
+            echo $(host myip.opendns.com resolver1.opendns.com | grep address)'
+        ),
         Async.apply(exec, 'git pull'),
         Async.apply(exec, 'git status'),
       ],
       function(err, results) {
         results.forEach((result) => {
-          log('Resultados:\n```\n' + result[0].toString() + '\n\n```');
+          log('Autoupdate task:\n```\n' + result[0].toString() + '\n\n```');
         });
       }
   );
@@ -252,9 +261,7 @@ app.post('/34c472e52db92d7bc625907bc61af59d7a71bcc9', function(req, res) {
     // aqui vai todos users autorizados
     if (json['pusher']['name'] == 'lunodrade') {
       const commitMsg = json['head_commit']['message'];
-      log(
-          `Atualizando repo local devido a push no github...\n**${commitMsg}**`
-      );
+      log(`AutoUpdate por chamada do Github...\nCommit msg: \`${commitMsg}\``);
       if (!DEBUG) updateRepo();
       // restartProcess();  //feito pelo nodemon
       // usando 'node run nodemon' pra iniciar o processo aqui
